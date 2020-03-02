@@ -7,22 +7,26 @@ Text db "Hello"
 org 100h
 
 Start:
-		
+
+.data 
+int9_ptr = 36d
+.code
 		xor ax, ax; ax = 0
 		mov es, ax; es-> PSP
 
 		cli
-		mov bx, 9 * 4;   es:[bx]-> int 09h in ISP Table
+		;mov bx, 9 * 4;   es:[bx]-> int 09h in ISP Table
 		
-		mov ax, word ptr es:[bx]    ;   
-		mov Old09, ax               ;  remember address of old developer by inter 09h in Old09 word 			mov ax, word ptr es:[bx+2]  ;  from
-		mov Old09+2, ax      	    ;  [09h] 
+		mov ax, word ptr es:[int9_ptr]    
+		mov Old09, ax			
+		mov ax, word ptr es:[int9_ptr+2]
+		mov Old09+2, ax
 		        
 
 		
-		mov word ptr es:[bx], offset New09  ; put to [09h] address
+		mov word ptr es:[int9_ptr], offset New09  ; put to [09h] address
 		mov ax, cs                          ;	of new developer of
-		mov word ptr es:[bx+2], ax          ;	                          
+		mov word ptr es:[int9_ptr+2], ax          ;	                          
 		
 
 		sti
@@ -34,10 +38,6 @@ Start:
 		inc dx				;
 		int 21h				;
 
-			db 0eah
-		Old09	dw 0
-			dw 0
-
 
 New09 		proc
 
@@ -46,7 +46,7 @@ New09 		proc
 		mov es, ax
 		
 		in al, 60h
-		mov di, (12*80+40)*2
+		mov di, (5*80+40)*2
 		mov ah, 4eh
 		cld
 		stosw
@@ -54,8 +54,8 @@ New09 		proc
 
 		push ax bx cx dx di
 		mov dh, 7
-		mov dl, 20
-		mov bl, 14
+		mov dl, 40
+		mov bl, 24
 		mov bh, 5
 		
 		add dh, 2
@@ -63,7 +63,7 @@ New09 		proc
 		call DrawFrame
 		pop di dx cx bx ax
 
-
+comment %
 		in al, 61h
 		mov ah, al
 		or al, 80h
@@ -73,8 +73,15 @@ New09 		proc
 		
 		mov al, 20h
 		out 20h, al
+%
 
 		pop es di ax
+
+
+			db 0eah
+		Old09	dw 0
+			dw 0
+
 
 		iret
 New09		endp
