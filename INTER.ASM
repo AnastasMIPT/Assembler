@@ -38,6 +38,10 @@ int9_ptr = 36d
 		inc dx				;
 		int 21h				;
 
+		
+			
+
+
 
 New09 		proc
 
@@ -78,17 +82,17 @@ comment %
 %
 
 		pop es di ax
-
-
-			db 0eah
-		Old09	dw 0
-			dw 0
-
-
+				
+		
+		pushf
+		call dword ptr cs:[Old09]
 
 		iret
 New09		endp
 		
+		Old09	dw 0
+			dw 0
+
 
 ;=====================================================================
 ;Draws a text from variable "Text"
