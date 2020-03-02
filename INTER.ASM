@@ -23,23 +23,10 @@ Start:
 		mov word ptr es:[bx], offset New09  ; put to [09h] address
 		mov ax, cs                          ;	of new developer of
 		mov word ptr es:[bx+2], ax          ;	                          
+		
+
 		sti
 		
-
-		mov dh, 7
-		mov dl, 20
-		mov bl, 8
-		mov bh, 2
-		
-		add dh, 2
-		mov cx, 10
-		
-		call DrawFrameAnime	
-		inc dl
-		inc dh
-		mov cx, 5
-		call DrawText 
-
 
 		mov ax, 3100h			; save program to mem
 		mov dx, offset EndLabel		; memory size to keep 												; resident in 16-byte paragraphs
@@ -47,12 +34,10 @@ Start:
 		inc dx				;
 		int 21h				;
 
+			db 0eah
+		Old09	dw 0
+			dw 0
 
-				
-
-		      db 0eah	
-		Old09 dw 0			;
-		      dw 0
 
 New09 		proc
 
@@ -65,7 +50,20 @@ New09 		proc
 		mov ah, 4eh
 		cld
 		stosw
+
+
+		push ax bx cx dx di
+		mov dh, 7
+		mov dl, 20
+		mov bl, 14
+		mov bh, 5
 		
+		add dh, 2
+		
+		call DrawFrame
+		pop di dx cx bx ax
+
+
 		in al, 61h
 		mov ah, al
 		or al, 80h
@@ -77,8 +75,8 @@ New09 		proc
 		out 20h, al
 
 		pop es di ax
-		iret
 
+		iret
 New09		endp
 		
 
@@ -132,6 +130,8 @@ DrawFrame	proc
 		push 0b800h
 		pop es
 		
+		xor cx, cx		
+
 		call Location
 				
 		mov left_s, up_left
