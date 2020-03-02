@@ -25,6 +25,22 @@ Start:
 		mov word ptr es:[bx+2], ax          ;	                          
 		sti
 		
+
+		mov dh, 7
+		mov dl, 20
+		mov bl, 8
+		mov bh, 2
+		
+		add dh, 2
+		mov cx, 10
+		
+		call DrawFrameAnime	
+		inc dl
+		inc dh
+		mov cx, 5
+		call DrawText 
+
+
 		mov ax, 3100h			; save program to mem
 		mov dx, offset EndLabel		; memory size to keep 												; resident in 16-byte paragraphs
 		shr dx, 4			; //16
