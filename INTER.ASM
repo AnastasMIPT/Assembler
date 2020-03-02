@@ -47,22 +47,24 @@ New09 		proc
 		
 		in al, 60h
 		mov di, (5*80+40)*2
-		mov ah, 4eh
+		mov ah, 20h; color
 		cld
 		stosw
 
-
+		
+		cmp al, 2
+		jne Next
 		push ax bx cx dx di
-		mov dh, 7
+		mov dh, 3
 		mov dl, 40
-		mov bl, 24
-		mov bh, 5
+		mov bl, 30
+		mov bh, 10
 		
-		add dh, 2
-		
+		;add dh, 2	
 		call DrawFrame
 		pop di dx cx bx ax
 
+Next:
 comment %
 		in al, 61h
 		mov ah, al
@@ -81,6 +83,7 @@ comment %
 			db 0eah
 		Old09	dw 0
 			dw 0
+
 
 
 		iret
@@ -123,7 +126,7 @@ DrawText	endp
 ;=====================================================================
 
 .data 
-color = 1fh
+color = 02h
 up_left = 0c9h
 horiz_line = 0cdh
 up_right = 0bbh
