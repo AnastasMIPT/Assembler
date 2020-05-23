@@ -1,0 +1,153 @@
+Turbo Assembler	 Version 4.1	    02/18/20 08:28:15	    Page 1
+mem.asm
+
+
+
+      1				     local @@
+      2
+      3	0000			     .model tiny
+      4	0000			     .data
+      5	0000  44 65 61 72 20 20	20+  s1	db 'Dear   Andrew$'
+      6	      41 6E 64 72 65 77	24
+      7	000E  48 65 6C 6C 6F 24	     s2	db 'Hello$'
+      8	0014			     .code
+      9				     org 100h
+     10	0100			     Start:
+     11
+     12	0100  1E				     push ds
+     13	0101  07				     pop es
+     14	0102  BF 0000r				     lea di, s1
+     15	0105  BE 000Er				     lea si, s2
+     16	0108  B9 0005				     mov cx, 5
+     17
+     18
+     19	010B  E8 0035				     call memcpy
+     20	010E  BF 0000r				     lea di, s1
+     21	0111  26: 8A 45	08			     mov al, es:[di+8]
+     22
+     23	0115  B4 09				     mov ah, 09h
+     24	0117  BA 0000r				     mov dx, offset s1
+     25	011A  CD 21				     int 21h
+     26
+     27	011C  B8 4C00				     mov ax, 4c00h
+     28	011F  CD 21				     int 21h
+     29
+     30				     ;====================================================================
+     31				     ; Search the first	entering of char
+     32				     ; Entery: CX - lengh of string
+     33				     ;	       AL - char for search
+     34				     ;	       ES:DI - full address of string
+     35				     ; Exit:   DI -> next after	the first entering of char OR primary
+     36				     ;	value of DI if not found
+     37				     ; Destroy:	CX
+     38				     ;====================================================================
+     39	0121			     memchr proc
+     40	0121  57				     push di
+     41	0122  FC				     cld
+     42	0123  F2> AE				     repne scasb
+     43	0125  75 02				     jne @@Next
+     44	0127  59				     pop cx
+     45	0128  C3				     ret
+     46
+     47	0129  5F		     @@Next:	     pop di
+     48
+     49	012A  C3				     ret
+     50	012B			     memchr endp
+     51				     ;====================================================================
+     52				     ; Compare two strings
+     53				     ; Entery:	DS:SI the address of the first string
+     54				     ;		ES:DI the address of the second	string
+     55				     ;		CX    a	number bytes for comparing
+     56				     ; Exit:	AL == 0	if equal
+     57				     ;		AL == 1	 if the	first greater
+Turbo Assembler	 Version 4.1	    02/18/20 08:28:15	    Page 2
+mem.asm
+
+
+
+     58				     ;		AL == 2	 if the	second
+     59				     ; Destroy:	CX, AL
+     60				     ;=====================================================================
+     61	012B			     memcmp proc
+     62	012B  FC				     cld
+     63	012C  F3> A6				     repe cmpsb
+     64	012E  74 07				     je	@@Equal
+     65	0130  77 0A				     ja	@@Greater
+     66	0132  B0 02				     mov al, 2
+     67	0134  EB 08 90				     jmp @@End
+     68
+     69	0137  B0 00		     @@Equal:	     mov al, 0
+     70	0139  EB 03 90				     jmp @@End
+     71
+     72	013C  B0 01		     @@Greater:	     mov al, 1
+     73
+     74	013E  C3		     @@End:	     ret
+     75	013F			     memcmp endp
+     76
+     77				     ;=====================================================================
+     78				     ; Fills first CX bytes by value from AL
+     79				     ; Entery:	     CX	- number of bytes
+     80				     ;		     AL	- new value for	this bytes
+     81				     ;		     ES:DI - address of	string
+     82				     ; Destroy:	CX, DI
+     83				     ;======================================================================
+     84	013F			     memset	     proc
+     85	013F  FC				     cld
+     86	0140  F3> AA				     rep stosb
+     87	0142  C3				     ret
+     88	0143			     memset	     endp
+     89				     ;======================================================================
+     90				     ; Copy first CX symbols from string1 to string2
+     91				     ; Entery: DS:SI - address of string1
+     92				     ;	       ES:DI - address of string2
+     93				     ; Destroy:	CX, SI,	DI
+     94				     ;======================================================================
+     95	0143			     memcpy	     proc
+     96	0143  FC				     cld
+     97	0144  F3> A4				     rep movsb
+     98	0146  C3				     ret
+     99	0147			     memcpy	     endp
+    100				     end	     Start
+Turbo Assembler	 Version 4.1	    02/18/20 08:28:15	    Page 3
+Symbol Table
+
+
+
+
+Symbol Name			  Type	 Value
+
+??DATE				  Text	 "02/18/20"
+??FILENAME			  Text	 "mem	  "
+??TIME				  Text	 "08:28:14"
+??VERSION			  Number 040A
+@32BIT				  Text	 0
+@@				  Number [BP-0002]
+@@END				  Near	 DGROUP:013E
+@@EQUAL				  Near	 DGROUP:0137
+@@GREATER			  Near	 DGROUP:013C
+@@NEXT				  Near	 DGROUP:0129
+@CODE				  Text	 DGROUP
+@CODESIZE			  Text	 0
+@CPU				  Text	 0101H
+@CURSEG				  Text	 _TEXT
+@DATA				  Text	 DGROUP
+@DATASIZE			  Text	 0
+@FILENAME			  Text	 MEM
+@INTERFACE			  Text	 000H
+@MODEL				  Text	 1
+@STACK				  Text	 DGROUP
+@WORDSIZE			  Text	 2
+MEMCHR				  Near	 DGROUP:0121
+MEMCMP				  Near	 DGROUP:012B
+MEMCPY				  Near	 DGROUP:0143
+MEMSET				  Near	 DGROUP:013F
+S1				  Byte	 DGROUP:0000
+S2				  Byte	 DGROUP:000E
+START				  Near	 DGROUP:0100
+
+Groups & Segments		  Bit Size Align  Combine Class
+
+DGROUP				  Group
+  _DATA				  16  0014 Word	  Public  DATA
+  _TEXT				  16  0147 Word	  Public  CODE
+
