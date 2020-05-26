@@ -28,11 +28,7 @@ _start:
 		;func_call printf, format, 235, 12, string2
 		
 		func_call printf, string3, lovestr, 3802, 100, '!', 127
-		;func_call printf, string2
 		
-		;push qword string2
-		;call printf
-		;add rsp, 8
 
         mov eax, SYS_EXIT    ; номер системного вызова  sys_exit
         mov ebx, 0           ; код завершения программы
@@ -49,7 +45,7 @@ section .data
 		buffer times 512 db 0
 		len_of_buffer dw 0
               
-		string2 db 'Is it true?', 0ah, 0
+		string2 db 'Is it true?', 0
         string3 db 'I %s %x %d%%%c%b', 0xA, 0
         lovestr db 'love', 0
         
@@ -59,11 +55,17 @@ section .data
         count_rezult times 32 db 0
         count_rezult_ptr db 0
         
+
 		SYS_WRITE equ 4
 		STDOUT equ 1	
 		SYS_EXIT equ 1
 		ASCII_NULL equ 48d
 		DIVIDER_10 equ 0ah
+		TAB equ 9
+		BACKSPACE equ 8
+		CARRIAGE_RETURN equ 13
+		BELL equ 7
+		NEW_LINE equ 10
 
 section .text
 
@@ -76,7 +78,7 @@ section .text
 ; %b - prints value by binary
 ; %o - prints value by oculus
 ; %x - prints value by hex
-; %$ - prints value by 2^32 based system
+; %y - prints value by 2^32 based system
 ;=======================================================================================
 
 printf:
@@ -97,7 +99,7 @@ printf:
 		cmp byte [rsi], '\'
 		je .Slash
 		
-		call handler_of_procent
+		call handler_of_percent
 		
 .Next:	
 		inc rsi
@@ -154,41 +156,41 @@ slash_handler:
 		je .Slesh
 		cmp byte [rsi], '"'
 		je .DQuote
-		cmp byte [rsi], 39
+		cmp byte [rsi], "'"
 		je .Quote
 
 
 .DQuote:
-		mov al, 34
+		mov al, '"'
 		stosb
 		jmp .Exit
 .Quote:
-		mov al, 39
+		mov al, "'"
 		stosb
 		jmp .Exit
 .Slesh:
-		mov al, 92
+		mov al, '\'
 		stosb
 		jmp .Exit
 .A:
-		mov al, 7
+		mov al, BELL
 		stosb
 		jmp .Exit
 .B:
-		mov al, 8
+		mov al, BACKSPACE
 		stosb
 		jmp .Exit
 .T:
-		mov al, 9
+		mov al, TAB
 		stosb
 		jmp .Exit
 		
 .R:
-		mov al, 13
+		mov al, CARRIAGE_RETURN
 		stosb
 		jmp .Exit
 .N:
-		mov al, 10
+		mov al, NEW_LINE
 		stosb
 
 
@@ -198,30 +200,23 @@ slash_handler:
 ; Handle of '%' specificator
 ; Entery: in [RSI] symbol after %
 ;===================================================================================
-handler_of_procent:
+handler_of_percent:
 		inc rsi
 		cmp byte [rsi], '%'
-		je .Procent
+		je .Percent
 		
 		add r15, 8
 		;function with %
-		cmp byte [rsi], 'c'
-		je .Symbol
-		cmp byte [rsi], 's'
-		je .String
-		cmp byte [rsi], 'b'
-		je .Binary
-		cmp byte [rsi], 'o'
-		je .Oculus
-		cmp byte [rsi], 'x'
-		je .Hex
-		cmp byte [rsi], '$'
-		je .B32
-		cmp byte [rsi], 'd'
-		je .Int
-		
+		mov al, byte [rsi]
+		sub al, 'b'
+		shl rax, 3
+		mov rbx, rax
+		add rbx, jump_table
+		cmp rbx, table_end
+		ja .Exit
+		jmp [rbx]
 
-.Procent:
+.Percent:
 		mov al, '%'
 		stosb
 		jmp .Exit
@@ -238,7 +233,7 @@ handler_of_procent:
 		call print_b
 		jmp .Exit
 
-.Oculus:
+.Octal:
 		mov cl, 3
 		call print_box$
 		jmp .Exit
@@ -258,6 +253,22 @@ handler_of_procent:
 		
 .Exit:				
 		ret
+
+.data
+jump_table	dq handler_of_percent.Binary,
+		    dq handler_of_percent.Symbol,
+			dq handler_of_percent.Int,
+			times 10 dq handler_of_percent.Exit,
+			dq handler_of_percent.Octal,
+			times 3 dq handler_of_percent.Exit,
+			dq handler_of_percent.String,
+			times 4 dq handler_of_percent.Exit,
+			dq handler_of_percent.Hex,
+			dq handler_of_percent.B32,
+table_end	dq handler_of_percent.Exit
+
+
+.text
 ;====================================================================================
 ;Prints hex, oculus, 32-bit  value
 ;Entery: CL - 3 for oculus, 4 for hex, 5 for 32-bit
@@ -411,3 +422,5 @@ print_format:
 
 .Exit:
 		ret
+
+
