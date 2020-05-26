@@ -20,16 +20,17 @@ Start:
 		mov Old09+2, ax
 		sti      
 
-		
+
+
 		mov dx, offset New09
 		call CatchHandler	
 		
 			
-		xor ax, ax; ax = 0
-		mov es, ax; es-> PSP
+		;xor ax, ax; ax = 0
+		;mov es, ax; es-> PSP
 
-		mov bx, 8 * 4
-		mov dx, offset New8
+		mov bx, 28 * 4
+		mov dx, offset New28
 		call CatchHandler	
 
 
@@ -44,7 +45,7 @@ Start:
 ;New hendler of 28 interrupt
 ;==========================================================================================
 		
-New8		proc
+New28		proc
 		
 		mov al, cs:b_ptr
 		mov dl, cs:f_ptr
@@ -59,10 +60,7 @@ Next1:
 Next2:
 
 		iret
-New8		endp	
-
-
-
+New28		endp	
 
 ;==========================================================================================
 ;New hendler of 9 interrupt
@@ -119,7 +117,8 @@ Next:
 New09		endp
 
 
-
+		Old28	dw 0
+			dw 0
 
 
 		Old09	dw 0
@@ -150,9 +149,9 @@ WritingToBuffer	endp
 
 CatchHandler	proc
 		cli
-		mov word ptr es:[bx], dx  ; put to [09h] address
-		mov ax, cs                          ;	of new developer of
-		mov word ptr es:[bx+2], ax          ;	
+		mov word ptr es:[bx], dx
+		mov ax, cs          
+		mov word ptr es:[bx+2], ax	
 		sti               
 		ret
 CatchHandler	endp
